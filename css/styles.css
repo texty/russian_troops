@@ -1,0 +1,51 @@
+#map {
+  max-width: 1000px;
+  height: 70vh;
+  margin: auto;
+}
+
+#photos {
+  max-width: 1000px;
+  height: 20vh;
+  margin: auto;
+}
+
+#photos img {
+  width: 250px;
+  border: 1px solid white;
+}
+
+.flex-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.flex-container .item:first-child {
+  margin-left: auto;
+}
+
+.flex-container .item:last-child {
+  margin-right: auto;
+}
+
+.marker-cluster-small {
+  background-color: rgba(240, 194, 12, 0.4);
+}
+
+.marker-cluster-small div {
+  background-color: rgba(240, 194, 12, 0.4);
+}
+
+.marker-cluster-medium {
+  background-color: rgba(255, 0, 0, 0.4);
+}
+
+.marker-cluster-medium div {
+  background-color: rgba(255, 0, 0, 0.4);
+}
+/*# sourceMappingURL=styles.css.map */

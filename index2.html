@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>HeatMap</title>
+    <link rel="import" type="application/javascript" href="bower_components/webcomponentsjs/webcomponents-lite.js">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js"></script>
+
+    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+
+    <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/MarkerCluster.css" />
+    <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/MarkerCluster.Default.css" />
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js'></script>
+    <script type="text/javascript" src="https://unpkg.com/leaflet.markercluster@1.0.6/dist/leaflet.markercluster-src.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
+
+</head>
+
+<style>
+    html,
+    body,
+    #map {
+        height: 100%;
+        width: 100%;
+    }
+
+</style>
+
+
+<body>
+    <div id="map"></div>
+
+    <script>
+        // Create variable to hold map element, give initial settings to map
+        var map = L.map('map', {
+            center: [23.70489, 43.90137],
+            zoom: 5
+        });
+
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        }).addTo(map);
+
+        var ojStyle = {
+            "color": "#ff7800",
+            "weight": 5,
+            "opacity": 0.65
+        };
+        // Hardcoded polygons as GeoJSON
+        var polygons = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [37.99896240234376, 21.55017532555692],
+                            [39.39422607421876, 21.476073444092435],
+                            [38.88336181640626, 22.56582956966297],
+                            [38.023681640625, 22.611475436593366],
+                            [37.43591308593751, 21.99908185836153],
+                            [37.28485107421876, 21.624239377938288],
+                            [37.28485107421876, 21.624239377938288],
+                            [37.99896240234376, 21.55017532555692]
+                        ]
+                    ]
+                }
+            }, {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [38.50708007812501, 21.453068633086783],
+                            [39.20745849609376, 21.37124437061832],
+                            [39.10858154296876, 20.876776727727016],
+                            [38.80920410156251, 20.912700155617568],
+                            [38.49884033203126, 20.94604992010052],
+                            [38.50708007812501, 21.453068633086783]
+                        ]
+                    ]
+                }
+            }, {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [50.57830810546875, 25.980268007469803],
+                            [50.77606201171876, 25.956809920555312],
+                            [50.780181884765625, 25.69970044378398],
+                            [50.56457519531251, 25.822144306879686],
+                            [50.56182861328126, 25.945696562830516],
+                            [50.57830810546875, 25.980268007469803]
+                        ]
+                    ]
+                }
+            }, {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [54.37408447265626, 24.51963836811676],
+                            [54.29443359375001, 24.40963901896311],
+                            [54.25872802734375, 24.449649897759667],
+                            [54.32739257812501, 24.539627918861232],
+                            [54.37133789062501, 24.559614286039903],
+                            [54.37408447265626, 24.51963836811676]
+                        ]
+                    ]
+                }
+            }, {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [54.40155029296876, 24.463400705082282],
+                            [54.41940307617188, 24.489648077028683],
+                            [54.45785522460938, 24.462150693715266],
+                            [54.43450927734376, 24.43839812102505],
+                            [54.40155029296876, 24.463400705082282]
+                        ]
+                    ]
+                }
+            }]
+        }
+        var polygonArray = []
+        for (i = 0; i < polygons.features.length; i++) {
+            console.log(polygons.features[i])
+            polygonArray.push(polygons.features[i]);
+        }
+
+        
+        // Compute a polygon "center", use your favorite algorithm (centroid, etc.)
+        L.Polygon.addInitHook(function () {
+            console.log(this)
+        	this._latlng = this._bounds.getCenter();
+        });
+        
+        // Provide getLatLng and setLatLng methods for Leaflet.markercluster to be able to cluster polygons.
+        L.Polygon.include({
+        	getLatLng: function () {
+            	return this._latlng;
+            },
+            setLatLng: function () {} // Dummy method.
+        });
+
+        var markers = L.markerClusterGroup().addTo(map);
+        var geoJsonLayer = L.geoJson(polygonArray);
+        markers.addLayer(geoJsonLayer);
+        map.fitBounds(markers.getBounds());
+
+    </script>
+</body>
+
+</html>
