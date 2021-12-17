@@ -14,7 +14,7 @@
    {
        attribution: 'Tiles &copy; Esri',
        maxZoom: 17,
-       minZoom: 6
+       minZoom: 5
    }).addTo(map);
    
    var myStyle = {
@@ -23,11 +23,28 @@
        "opacity": 0.8
    };
 
+   var splide = new Splide( '.splide', {    
+    perPage: 4,
+    perMove: 1,
+    direction: 'rtl',
+    /* clones: 0,
+    cloneStatus: false, */
+    breakpoints: {
+    640: {
+      perPage: 2,
+    }},
+    //height: '25vh',
+    width: '100%',          
+  } );
+  splide.mount();
+
    function onEachFeatureClosure(defaultColor, weightValue) {
        return function onEachFeature(feature, layer) {
-           layer.on('click', function (e) { 
-               console.log(feature.properties.Name)
-           });        
+           layer.on('click', function (e) {             
+               splide.add( '<li class="splide__slide"><img class="item" src="img/2.jpg"/></li>' );
+            }
+           )
+                
        }
    }
 
@@ -63,5 +80,8 @@
            
            markers.addLayer(geoJsonLayer);
 
-          /*  map.fitBounds(markers.getBounds()); */
+            if(window.innerWidth < 800){
+                map.fitBounds(markers.getBounds());
+            }
+          
    });

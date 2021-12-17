@@ -4,14 +4,22 @@
     margin: auto;
 }
 
+.splide.is-initialized, .splide.is-rendered {
+    height:20vh !important;
+}
+
+.splide__progress__bar {
+    height: 3px;
+    background: #ccc;
+  }
+
 #photos {
-    max-width: 1000px; 
-    height: 20vh;
+    max-width: 1000px;     
     margin: auto;       
 }
 
 #photos img {        
-    width:250px;
+    height: 100%;
     border: 1px solid white;
 }
 
