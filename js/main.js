@@ -65,7 +65,8 @@
   /* По кліку на полігон міняємо перелік картинок у горталці*/
    function onEachFeatureClosure(defaultColor, weightValue) {
        return function onEachFeature(feature, layer) {           
-           layer.on('click', function (e) {                
+           layer.on('click', function (e) {   
+               console.log(feature.properties.Name);                            
                while(splide.length > 0){
                     splide.remove( splide.length - 1 );
                }                             
@@ -133,11 +134,61 @@
             setLatLng: function () {} // Dummy method.
         });
 
-        var markers = L.markerClusterGroup({ }).addTo(map);
+        function hasProperty(element, index, array) {
+            console.log(element.feature.properties)
+            return element.feature.properties.Name === "Kamensk-Shakhtinsky";
+          }
+
+        var markers = L.markerClusterGroup({
+               iconCreateFunction: function (cluster) {  
+                   
+                var isNew;
+            
+                if(cluster.getAllChildMarkers().some(hasProperty)) {       
+                    isNew = "green"             
+                } else {
+                    isNew = "red"
+                }  
+
+                return L.divIcon({ className: 'marker-cluster' +  ' marker-cluster-' + isNew, html: '<div><span>' + cluster.getChildCount() + '</div></span>' })
+
+                
+                
+               
+            }       
+         }).on("clusterclick", function (a) {    
+             console.log(a.layer )               
+        }).addTo(map);       
+
+         
+        //marker-cluster marker-cluster-small
+        //marker-cluster marker-cluster-medium
+
+        /*  map.on("zoom", function(){
+            var markers = L.markerClusterGroup({
+                iconCreateFunction: function (cluster) {                            
+                 if(cluster.getAllChildMarkers().some(hasProperty)) {                    
+                     return L.divIcon({ className: 'marker-cluster marker-cluster-small', html: '<div><span>' + cluster.getChildCount() + '</div></span>' })
+                 } else {
+                     return L.divIcon({ className: 'marker-cluster marker-cluster-medium', html: '<div><span>' + cluster.getChildCount() + '</div></span>' })
+ 
+                 }                
+             }
+          })
+          
+          markers.refreshClusters();
+ 
+
+         }); */
+        
+
+
+
+         
 
         var geoJsonLayer = L.geoJson(polygonArray,  { style: myStyle, onEachFeature: onEachFeatureClosure()  }  );
         
-        markers.addLayer(geoJsonLayer);
+        markers.addLayer(geoJsonLayer);       
 
 
 
