@@ -8,17 +8,21 @@
     height:20vh !important;
 }
 
+.splide__slide {
+    cursor: pointer;
+}
+
 .my-slider-progress {
     background: #ccc;
-  }
+}
   
-  .my-slider-progress-bar {
+.my-slider-progress-bar {
     margin-top: 2px;
     background: rgb(236, 4, 4);
     height: 4px;
     transition: width 400ms ease;
     width: 0;
-  }
+}
 
 #photos {
     max-width: 1000px;     

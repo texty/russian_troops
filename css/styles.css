@@ -8,6 +8,10 @@
   height: 20vh !important;
 }
 
+.splide__slide {
+  cursor: pointer;
+}
+
 .my-slider-progress {
   background: #ccc;
 }
