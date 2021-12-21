@@ -24,6 +24,10 @@
     <link rel="stylesheet" href='lib/splide.min.css'/>
     <script src='lib/splide.min.js'></script>
 
+    <!-- Image comparison -->
+    <link rel="stylesheet" href="lib/image-compare-viewer.min.css" type="text/css">  
+    <script src="lib/image-compare-viewer.min.js"></script>
+
     <!-- Archived -->
     <!--   <script src="lib/leaflet-providers.js"></script>--> 
     <!--   <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script> -->
@@ -34,7 +38,9 @@
 </head>
  
   <body>
+
     <div id="map"></div>
+    
     <div id="photos">
       <div class="splide">
         <div class="splide__track">
@@ -44,51 +50,49 @@
             <li class="splide__slide"><img class="item" src='img/1.jpg'/></li>
             <li class="splide__slide"><img class="item" src='img/1.jpg'/></li>
             <li class="splide__slide"><img class="item" src='img/1.jpg'/></li>
-            <li class="splide__slide"><img class="item" src='img/1.jpg'/></li>
-          
+            <li class="splide__slide"><img class="item" src='img/1.jpg'/></li>          
           </ul>
         </div>
-        <div class="splide__progress">
-          <div class="splide__progress__bar">
+
+        <div class="my-slider-progress">
+          <div class="my-slider-progress-bar"></div>
         </div>
       </div>
   </div>
 
-<!--     <div id="photos" class='flex-container'>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>
-        <img class="item" src='img/1.jpg'/>       
+<div id='comparison-wrapper'>
+    <div class="close">
+            <span class="close-btn">&times;</span>   
+    </div>
+    <div id="comparison">
+      <img id="before" src="img/1.jpg" alt="BEFORE" />
+      <img id="after" src="img/2.jpg" alt="AFTER" />
+    </div>
+</div>
 
-    </div> -->
 
-    <script src='js/main.js'></script>
+<script src='js/main.js'></script>
+    
     <script>
-      /*  document.addEventListener( 'DOMContentLoaded', function() {
-        var splide = new Splide( '.splide', {
-          type   : 'loop',
-          perPage: 4,
-          clones: 0,
-          cloneStatus: false,
-          breakpoints: {
-          640: {
-            perPage: 2,
-          }},
-          //height: '25vh',
-          width: '100%',          
-        } );
-        splide.mount();
-      } );  */
+      const element = document.getElementById("comparison");
+      const myViewer = new ImageCompare(element).mount();     
+
+
+      // Get the modal
+      var modal = document.getElementById("comparison");
+      var modal_wrapper = document.getElementById("comparison-wrapper");
+
+      document.getElementsByClassName("close")[0]
+        .addEventListener("click", function(){            
+            document.getElementById('comparison-wrapper').style.display = "none";
+      });
+
+      // When the user clicks anywhere outside of the modal
+      window.onclick = function(event) {
+          if(event.target === modal_wrapper) {
+            document.getElementById('comparison-wrapper').style.display = "none";
+          }
+      }
     </script>
   </body>
 </html>
