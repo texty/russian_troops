@@ -64,8 +64,20 @@
 
   /* По кліку на полігон міняємо перелік картинок у горталці*/
    function onEachFeatureClosure(defaultColor, weightValue) {
-       return function onEachFeature(feature, layer) {           
-           layer.on('click', function (e) {   
+       return function onEachFeature(feature, layer) {     
+           
+            var polygonCenter = layer.getBounds().getCenter();
+
+            // e.g. using Leaflet.label plugin
+                L.marker(polygonCenter, { opacity: 0 })
+                    //.bindTooltip(feature.properties['Name'], { permanent: true})
+                    .bindTooltip('2021.12.06', { permanen: true, noHide: true})
+                    .addTo(map);
+
+                    
+        
+            
+           layer.on('click', function (e) { 
                console.log(feature.properties.Name);                            
                while(splide.length > 0){
                     splide.remove( splide.length - 1 );
@@ -135,8 +147,7 @@
         });
 
         function hasProperty(element, index, array) {
-            console.log(element.feature.properties)
-            return element.feature.properties.Name === "Kamensk-Shakhtinsky";
+           return element.feature.properties.Name === "Kamensk-Shakhtinsky";
           }
 
         var markers = L.markerClusterGroup({
@@ -150,47 +161,22 @@
                     isNew = "red"
                 }  
 
-                return L.divIcon({ className: 'marker-cluster' +  ' marker-cluster-' + isNew, html: '<div><span>' + cluster.getChildCount() + '</div></span>' })
+                return L.divIcon({ className: 'marker-cluster' +  
+                ' marker-cluster-' + isNew, html: '<div><span>' + cluster.getChildCount() + '<br>'+
+                `<span style="color:${isNew}">21.12.2021</span>`+
+                '</div></span>' })
 
                 
                 
                
             }       
-         }).on("clusterclick", function (a) {    
-             console.log(a.layer )               
-        }).addTo(map);       
+         }).addTo(map);       
 
-         
-        //marker-cluster marker-cluster-small
-        //marker-cluster marker-cluster-medium
-
-        /*  map.on("zoom", function(){
-            var markers = L.markerClusterGroup({
-                iconCreateFunction: function (cluster) {                            
-                 if(cluster.getAllChildMarkers().some(hasProperty)) {                    
-                     return L.divIcon({ className: 'marker-cluster marker-cluster-small', html: '<div><span>' + cluster.getChildCount() + '</div></span>' })
-                 } else {
-                     return L.divIcon({ className: 'marker-cluster marker-cluster-medium', html: '<div><span>' + cluster.getChildCount() + '</div></span>' })
- 
-                 }                
-             }
-          })
-          
-          markers.refreshClusters();
- 
-
-         }); */
+             
         
 
-
-
-         
-
-        var geoJsonLayer = L.geoJson(polygonArray,  { style: myStyle, onEachFeature: onEachFeatureClosure()  }  );
-        
-        markers.addLayer(geoJsonLayer);       
-
-
+        var geoJsonLayer = L.geoJson(polygonArray,  { style: myStyle, onEachFeature: onEachFeatureClosure()  }  );        
+        markers.addLayer(geoJsonLayer);
 
         if(window.innerWidth < 800){
             map.fitBounds(markers.getBounds());
