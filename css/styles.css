@@ -18,7 +18,7 @@
 
 .my-slider-progress-bar {
   margin-top: 2px;
-  background: #ec0404;
+  background: #ff5a7b;
   height: 4px;
   -webkit-transition: width 400ms ease;
   transition: width 400ms ease;
@@ -53,21 +53,16 @@
   margin-right: auto;
 }
 
-/* .green-icon {   
-    div {
-       
-    }
-} */
 .marker-cluster-small {
   background-color: transparent;
 }
 
 .marker-cluster-red div {
-  background-color: rgba(255, 0, 0, 0.4);
+  background-color: rgba(255, 90, 123, 0.8);
 }
 
 .marker-cluster-green div {
-  background-color: rgba(0, 225, 0, 0.4);
+  background-color: rgba(110, 107, 255, 0.8);
 }
 
 .marker-cluster-medium {

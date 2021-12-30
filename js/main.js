@@ -12,6 +12,9 @@
   const map_STYLE__2 = 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png'
   const map_STYLE__3 = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
 
+
+  var default_lat = 54.60600330049135;
+  var default_lng = 33.157733220304166;
   
   // load a tile layer
    L.tileLayer(map_STYLE__3,
@@ -53,46 +56,82 @@
   /* по кліку показуємо модальне вікно з comparison slider */
   splide.on( 'click', function (e) {
       
-      let clicked_image = e.slide.childNodes[0].getAttribute("src");      
+     let timestamp = e.slide.childNodes[0].getAttribute("timestamp");
+     let toTime = timestamp.replace('T00:00:00Z', 'T23:59:59Z')
+
+     let URL = `https://apps.sentinel-hub.com/eo-browser/?zoom=15&lat=${default_lat}&lng=${default_lng}&themeId=DEFAULT-THEME&visualizationUrl=https%3A%2F%2Fservices.sentinel-hub.com%2Fogc%2Fwms%2Ff2068f4f-3c75-42cf-84a1-42948340a846&datasetId=S1_AWS_IW_VVVH&fromTime=${timestamp}&toTime=${toTime}&layerId=7_SAR-URBAN`
+
+     window.open(URL, '_blank');
      
-      let last_image = document.querySelector('#splide01-slide01 > img').getAttribute("src");
+     /*  let last_image = document.querySelector('#splide01-slide01 > img').getAttribute("src");
       document.getElementById('before').setAttribute('src', clicked_image)
       document.getElementById('after').setAttribute('src', last_image)
-      document.getElementById('comparison-wrapper').style.display = "flex";
+      document.getElementById('comparison-wrapper').style.display = "flex"; */
   });
+
+
+  
+
+
+    //дефолті знімки в слайдер
+    $.getJSON(API_ROOT + "/api/v1/zones/44/", function(images){ 
+        var satelites = images.geometry.filter(function(d){
+            return d.id === 103;
+        })
+
+        satelites[0].images.forEach(function(image){
+            splide.add( `<li class="splide__slide"><img class="item" src=${image.image_url} timestamp=${image.timestamp}></li>` );
+        })  
+    }); 
 
 
   /* По кліку на полігон міняємо перелік картинок у горталці*/
    function onEachFeatureClosure(defaultColor, weightValue) {
-       return function onEachFeature(feature, layer) {     
+       return function onEachFeature(feature, layer) {  
+           
            
             var polygonCenter = layer.getBounds().getCenter();
 
+            
+
             // e.g. using Leaflet.label plugin
-                L.marker(polygonCenter, { opacity: 0 })
+               /*  L.marker(polygonCenter, { opacity: 0 })
                     //.bindTooltip(feature.properties['Name'], { permanent: true})
-                    .bindTooltip('2021.12.06', { permanen: true, noHide: true})
-                    .addTo(map);
+                    .bindTooltip(feature.properties['date'], { permanen: true, noHide: true})
+                    .addTo(map); */
 
                     
-        
+                    'fromTime=2021-12-18T00%3A00%3A00.000Z&toTime=2021-12-18T00%3A00%3A00.000Z&layerId=7_SAR-URBAN'
+
+                    'fromTime=2021-12-18T00%3A00%3A00.000Z&toTime=2021-12-18T23%3A59%3A59.999Z&layerId=7_SAR-URBAN'
             
            layer.on('click', function (e) { 
-               console.log(feature.properties.Name);                            
                while(splide.length > 0){
                     splide.remove( splide.length - 1 );
-               }                             
-               splide.add( '<li class="splide__slide"><img class="item" src="img/2.jpg"/></li>' );
-               splide.add( '<li class="splide__slide"><img class="item" src="img/1.jpg"/></li>' );
-               splide.add( '<li class="splide__slide"><img class="item" src="img/1.jpg"/></li>' );
-               splide.add( '<li class="splide__slide"><img class="item" src="img/2.jpg"/></li>' );
-               splide.add( '<li class="splide__slide"><img class="item" src="img/1.jpg"/></li>' );
-               splide.add( '<li class="splide__slide"><img class="item" src="img/2.jpg"/></li>' );
-               splide.add( '<li class="splide__slide"><img class="item" src="img/1.jpg"/></li>' );
-               splide.add( '<li class="splide__slide"><img class="item" src="img/2.jpg"/></li>' );
+               }   
+               
+                $.getJSON(API_ROOT + "/api/v1/zones/" + feature.properties.id + "/", function(images){                    
+                    var satelites = images.geometry.filter(function(d){
+                       return d.id === feature.properties.polygon_id;
+                   })
+
+                   satelites[0].images.forEach(function(image){
+                        splide.add( `<li class="splide__slide"><img class="item" src=${image.image_url}></li>` );
+                   })
+
+                   default_lat = polygonCenter.lat;
+                   default_lng = polygonCenter.lng;
+
+
+                   document.getElementById('clicked_place').innerHTML = images.name;
+                   document.getElementById('clicked_lnglat').innerHTML = `<b>Координати:</b>: ${polygonCenter.lat}, ${polygonCenter.lng}`;
+
+                });              
 
                var end = splide.Components.Controller.getEnd() + 1;
                bar.style.width = String( 100 * ( splide.index + 1 ) / end ) + '%';
+
+               
 
             }
            )
@@ -114,11 +153,10 @@
         var geojson_file = {"type": "FeatureCollection", "features": []}
 
         for(var i =0; i < polygons.length; i++){       
-            for(var n = 0; n < polygons[i].geometry.length; n++ ){
-                
+            for(var n = 0; n < polygons[i].geometry.length; n++ ){                
                 let feature = { 
                     "type": "Feature", 
-                    "properties": { "id": polygons[i].id, "Name": polygons[i].name }, 
+                    "properties": { "id": polygons[i].id, "polygon_id": polygons[i].geometry[n].id, "Name": polygons[i].name, "date": polygons[i].last_satellite_image_date }, 
                     "geometry": { "type": "MultiPolygon", 
                                   "coordinates": polygons[i].geometry[n].geometry.coordinates 
                                 } 
@@ -148,22 +186,43 @@
 
         function hasProperty(element, index, array) {
            return element.feature.properties.Name === "Kamensk-Shakhtinsky";
-          }
+          }    
 
         var markers = L.markerClusterGroup({
                iconCreateFunction: function (cluster) {  
                    
-                var isNew;
+                var clusterColor;
+                var spanColor;
+                var lastDate;
             
-                if(cluster.getAllChildMarkers().some(hasProperty)) {       
-                    isNew = "green"             
+                /* if(cluster.getAllChildMarkers().some(hasProperty)) {       
+                    clusterColor = "green"             
                 } else {
-                    isNew = "red"
-                }  
+                    clusterColor = "red"
+                }   */
+
+                clusterColor = "red";
+                spanColor = "#ff5a7b";
+
+                //беремо максимальну дату з кожного кластера
+                var dates = [];
+                cluster.getAllChildMarkers().forEach(function(k){                                
+                    if(!!k.feature.properties.date) {
+                        dates.push(new Date(k.feature.properties.date))
+                    }                     
+                })  
+
+                if(dates.length > 0){
+                    formattedDated = new Date(Math.max.apply(null,dates));                    
+                    lastDate = formattedDated.getDate()  + "." + (formattedDated.getMonth()+1) + "." + formattedDated.getFullYear();                 
+
+                } else {
+                    lastDate = ""
+                }
 
                 return L.divIcon({ className: 'marker-cluster' +  
-                ' marker-cluster-' + isNew, html: '<div><span>' + cluster.getChildCount() + '<br>'+
-                `<span style="color:${isNew}">21.12.2021</span>`+
+                ' marker-cluster-' + clusterColor, html: '<div><span>' + cluster.getChildCount() + '<br>'+
+                `<span style="color:${spanColor}">` + lastDate  +`</span>`+
                 '</div></span>' })
 
                 
@@ -178,8 +237,10 @@
         var geoJsonLayer = L.geoJson(polygonArray,  { style: myStyle, onEachFeature: onEachFeatureClosure()  }  );        
         markers.addLayer(geoJsonLayer);
 
-        if(window.innerWidth < 800){
+
+        map.fitBounds(markers.getBounds());
+        /* if(window.innerWidth < 800){
             map.fitBounds(markers.getBounds());
-        } 
+        }  */
           
    });
