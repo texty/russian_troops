@@ -88,21 +88,19 @@
 
   /* По кліку на полігон міняємо перелік картинок у горталці*/
    function onEachFeatureClosure(defaultColor, weightValue) {
-       return function onEachFeature(feature, layer) {  
+       return function onEachFeature(feature, layer) {        
+
+            //tooltip with last date
+            let tooltip = new Date(feature.properties.date) 
+            layer.bindTooltip(tooltip.getDate()  + "." + (tooltip.getMonth()+1) + "." + tooltip.getFullYear()); 
            
-           
+
+            //polygon center for default lat lng
             var polygonCenter = layer.getBounds().getCenter();
 
             
-
-            // e.g. using Leaflet.label plugin
-               /*  L.marker(polygonCenter, { opacity: 0 })
-                    //.bindTooltip(feature.properties['Name'], { permanent: true})
-                    .bindTooltip(feature.properties['date'], { permanen: true, noHide: true})
-                    .addTo(map); */
-
-            
            layer.on('click', function (e) { 
+               
                while(splide.length > 0){
                     splide.remove( splide.length - 1 );
                }   
@@ -233,7 +231,11 @@
              
         
 
-        var geoJsonLayer = L.geoJson(polygonArray,  { style: myStyle, onEachFeature: onEachFeatureClosure()  }  );        
+        var geoJsonLayer = L.geoJson(polygonArray,  { 
+            style: myStyle, onEachFeature: onEachFeatureClosure()  } 
+             ); 
+            
+            
         markers.addLayer(geoJsonLayer);
 
 
