@@ -187,7 +187,7 @@
           }    
 
         var markers = L.markerClusterGroup({
-                showCoverageOnHover: false,
+               showCoverageOnHover: false,
                iconCreateFunction: function (cluster) {  
                    
                 var clusterColor;
