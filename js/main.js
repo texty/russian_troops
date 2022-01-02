@@ -80,7 +80,8 @@
         })
 
         satelites[0].images.forEach(function(image){
-            splide.add( `<li class="splide__slide"><img class="item" src=${image.image_url} timestamp=${image.timestamp}></li>` );
+            let date = new Date(image.timestamp)
+            splide.add( `<li class="splide__slide"><p>`+ date.getDate()  + "." + (date.getMonth()+1) + "." + date.getFullYear() + `</p><img class="item" src=${image.image_url} timestamp=${image.timestamp}></li>` );
         })  
     }); 
 
@@ -100,10 +101,6 @@
                     .bindTooltip(feature.properties['date'], { permanen: true, noHide: true})
                     .addTo(map); */
 
-                    
-                    'fromTime=2021-12-18T00%3A00%3A00.000Z&toTime=2021-12-18T00%3A00%3A00.000Z&layerId=7_SAR-URBAN'
-
-                    'fromTime=2021-12-18T00%3A00%3A00.000Z&toTime=2021-12-18T23%3A59%3A59.999Z&layerId=7_SAR-URBAN'
             
            layer.on('click', function (e) { 
                while(splide.length > 0){
@@ -116,7 +113,8 @@
                    })
 
                    satelites[0].images.forEach(function(image){
-                        splide.add( `<li class="splide__slide"><img class="item" src=${image.image_url}></li>` );
+                       let date = new Date(image.timestamp)
+                        splide.add( `<li class="splide__slide"><p>`+ date.getDate()  + "." + (date.getMonth()+1) + "." + date.getFullYear() + `</p><img class="item" src=${image.image_url} timestamp=${image.timestamp}></li>` );
                    })
 
                    default_lat = polygonCenter.lat;
@@ -141,7 +139,7 @@
 
    /* полігон з окупованими територіями */
    $.getJSON("data/tot_teritory.json",function(military){
-       var geoJsonLayer = L.geoJson(military,  { fill:'url(img/image.gif)', weight: 0, color: tot_color, opacity: 0.4}   );           
+       var geoJsonLayer = L.geoJson(military,  {fill:'url(img/image.gif)', weight: 0, color: tot_color, fillOpacity: 0.1}   );           
            map.addLayer(geoJsonLayer);
    });
 
@@ -189,6 +187,7 @@
           }    
 
         var markers = L.markerClusterGroup({
+                showCoverageOnHover: false,
                iconCreateFunction: function (cluster) {  
                    
                 var clusterColor;
