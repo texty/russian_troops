@@ -15,20 +15,22 @@
 
   var default_lat = 54.60600330049135;
   var default_lng = 33.157733220304166;
+
+  var currentZoom = 4;
   
   // load a tile layer
    L.tileLayer(map_STYLE__3,
    {
        attribution: 'Tiles &copy; Esri',
        maxZoom: 17,
-       minZoom: 5
+       minZoom: 4
    }).addTo(map);
    
 
    /* стиль полігонів */
    var myStyle = {
        "color": "red",
-       "weight": 1,
+       "weight": 2,
        "opacity": 0.8
    };
 
@@ -56,7 +58,8 @@
   /* по кліку показуємо модальне вікно з comparison slider */
   splide.on( 'click', function (e) {
       
-     let timestamp = e.slide.childNodes[0].getAttribute("timestamp");
+     let timestamp = e.slide.childNodes[1].getAttribute("timestamp");
+     console.log(timestamp)
      let toTime = timestamp.replace('T00:00:00Z', 'T23:59:59Z')
 
      let URL = `https://apps.sentinel-hub.com/eo-browser/?zoom=15&lat=${default_lat}&lng=${default_lng}&themeId=DEFAULT-THEME&visualizationUrl=https%3A%2F%2Fservices.sentinel-hub.com%2Fogc%2Fwms%2Ff2068f4f-3c75-42cf-84a1-42948340a846&datasetId=S1_AWS_IW_VVVH&fromTime=${timestamp}&toTime=${toTime}&layerId=7_SAR-URBAN`
@@ -74,9 +77,9 @@
 
 
     //дефолті знімки в слайдер
-    $.getJSON(API_ROOT + "/api/v1/zones/44/", function(images){ 
+    $.getJSON(API_ROOT + "/api/v1/zones/62/", function(images){ 
         var satelites = images.geometry.filter(function(d){
-            return d.id === 103;
+            return d.id === 126;
         })
 
         satelites[0].images.forEach(function(image){
@@ -86,54 +89,26 @@
     }); 
 
 
-  /* По кліку на полігон міняємо перелік картинок у горталці*/
-   function onEachFeatureClosure(defaultColor, weightValue) {
-       return function onEachFeature(feature, layer) {        
-
-            //tooltip with last date
-            let tooltip = new Date(feature.properties.date) 
-            layer.bindTooltip(tooltip.getDate()  + "." + (tooltip.getMonth()+1) + "." + tooltip.getFullYear()); 
-           
-
-            //polygon center for default lat lng
-            var polygonCenter = layer.getBounds().getCenter();
-
-            
-           layer.on('click', function (e) { 
-               
-               while(splide.length > 0){
-                    splide.remove( splide.length - 1 );
-               }   
-               
-                $.getJSON(API_ROOT + "/api/v1/zones/" + feature.properties.id + "/", function(images){                    
-                    var satelites = images.geometry.filter(function(d){
-                       return d.id === feature.properties.polygon_id;
-                   })
-
-                   satelites[0].images.forEach(function(image){
-                       let date = new Date(image.timestamp)
-                        splide.add( `<li class="splide__slide"><p>`+ date.getDate()  + "." + (date.getMonth()+1) + "." + date.getFullYear() + `</p><img class="item" src=${image.image_url} timestamp=${image.timestamp}></li>` );
-                   })
-
-                   default_lat = polygonCenter.lat;
-                   default_lng = polygonCenter.lng;
+    var pulseLayer = new L.LayerGroup();   
 
 
-                   document.getElementById('clicked_place').innerHTML = images.name;
-                   document.getElementById('clicked_lnglat').innerHTML = `<b>Координати:</b>: ${polygonCenter.lat}, ${polygonCenter.lng}`;
 
-                });              
+    const generatePulsatingMarker = function (radius, color) {
+        const cssStyle = `
+        width: ${radius}px;
+        height: ${radius}px;
+        background: ${color};
+        color: ${color};
+        opacity: 0.5;
+        box-shadow: 0 0 0 ${color};
+      `
+        return L.divIcon({
+            html: `<span style="${cssStyle}" class="pulse"/>`,
+            className: ''
+        })
+    };
+ 
 
-               var end = splide.Components.Controller.getEnd() + 1;
-               bar.style.width = String( 100 * ( splide.index + 1 ) / end ) + '%';
-
-               
-
-            }
-           )
-                
-       }
-   }
 
    /* полігон з окупованими територіями */
    $.getJSON("data/tot_teritory.json",function(military){
@@ -166,6 +141,20 @@
             return d.geometry.coordinates.length > 0
         }) 
 
+
+        function showPulse(){
+            pulseLayer.clearLayers();  
+            markers.eachLayer(function(layer){ 
+                var visibleOne = markers.getVisibleParent(layer);
+                if(visibleOne === null){
+                    const pulsatingIcon = generatePulsatingMarker(0, 'red');   
+                    L.marker(layer.getBounds().getCenter(), { icon: pulsatingIcon}).addTo(pulseLayer); 
+                    map.addLayer(pulseLayer) 
+                    
+                }
+            });
+          }
+
        
       
         //приклад кластерізації полігонів взятий тут: https://js.do/code/166021        
@@ -186,8 +175,10 @@
 
         var markers = L.markerClusterGroup({
                showCoverageOnHover: false,
+               zoomToBoundsOnClick: true,
                iconCreateFunction: function (cluster) {  
-                   
+
+                  
                 var clusterColor;
                 var spanColor;
                 var lastDate;
@@ -219,16 +210,83 @@
 
                 return L.divIcon({ className: 'marker-cluster' +  
                 ' marker-cluster-' + clusterColor, html: '<div><span>' + cluster.getChildCount() + '<br>'+
-                `<span style="color:${spanColor}">` + lastDate  +`</span>`+
+                `<span style="color:${spanColor}; background-color: white;">` + lastDate  +`</span>`+
                 '</div></span>' })
 
                 
                 
                
             }       
-         }).addTo(map);       
+         }).addTo(map);     
+         
 
+
+  var myAllPolygons = [];
+ 
+
+  map.on("zoomend",  function(){    
+      showPulse();
+
+  });
+
+
+         
+  /* По кліку на полігон міняємо перелік картинок у горталці*/
+  function onEachFeatureClosure(defaultColor, weightValue) {
+    return function onEachFeature(feature, layer) {  
+        //console.log(layer);
+
+        myAllPolygons.push(layer)
+   
+         //tooltip with last date
+         let tooltip = new Date(feature.properties.date) 
+         layer.bindTooltip(tooltip.getDate()  + "." + (tooltip.getMonth()+1) + "." + tooltip.getFullYear()); 
+        
+
+         //polygon center for default lat lng
+         var polygonCenter = layer.getBounds().getCenter();
+      
+         layer.on('click', function (e) { 
+
+            while(splide.length > 0){
+                 splide.remove( splide.length - 1 );
+            }   
+            
+             $.getJSON(API_ROOT + "/api/v1/zones/" + feature.properties.id + "/", function(images){                    
+                 var satelites = images.geometry.filter(function(d){
+                    return d.id === feature.properties.polygon_id;
+                })
+
+                satelites[0].images.forEach(function(image){
+                    let date = new Date(image.timestamp)
+                     splide.add( `<li class="splide__slide"><p>`+ date.getDate()  + "." + (date.getMonth()+1) + "." + date.getFullYear() + `</p><img class="item" src=${image.image_url} timestamp=${image.timestamp}></li>` );
+                })
+
+                default_lat = polygonCenter.lat;
+                default_lng = polygonCenter.lng;
+
+
+                document.getElementById('clicked_place').innerHTML = images.name;
+                document.getElementById('clicked_lnglat').innerHTML = `<b>Координати:</b>: ${polygonCenter.lat}, ${polygonCenter.lng}`;
+
+             });              
+
+            var end = splide.Components.Controller.getEnd() + 1;
+            bar.style.width = String( 100 * ( splide.index + 1 ) / end ) + '%';
+
+            
+
+         }
+        )
              
+    }
+}
+
+
+     
+
+
+      
         
 
         var geoJsonLayer = L.geoJson(polygonArray,  { 
@@ -237,11 +295,13 @@
             
             
         markers.addLayer(geoJsonLayer);
-
+        
 
         map.fitBounds(markers.getBounds());
         /* if(window.innerWidth < 800){
             map.fitBounds(markers.getBounds());
         }  */
+
+       
           
    });
