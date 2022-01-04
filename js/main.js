@@ -142,13 +142,15 @@
         }) 
 
 
+        /* Спроба додати пульсуючі маркери, впливає на  */
+
         function showPulse(){
             pulseLayer.clearLayers();  
             markers.eachLayer(function(layer){ 
                 var visibleOne = markers.getVisibleParent(layer);
                 if(visibleOne === null){
-                    const pulsatingIcon = generatePulsatingMarker(0, 'red');   
-                    L.marker(layer.getBounds().getCenter(), { icon: pulsatingIcon}).addTo(pulseLayer); 
+                    const pulsatingIcon = generatePulsatingMarker(0.2, 'rgba(255, 90, 123, 0.8)');   
+                    L.marker(layer.getBounds().getCenter(), { icon: pulsatingIcon, interactive: false}).addTo(pulseLayer); 
                     map.addLayer(pulseLayer) 
                     
                 }
@@ -224,8 +226,11 @@
   var myAllPolygons = [];
  
 
-  map.on("zoomend",  function(){    
-      showPulse();
+  map.on("zoom",  function(){    
+    setTimeout(function(){
+        showPulse()
+        },2000);
+      
 
   });
 
